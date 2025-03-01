@@ -1,0 +1,36 @@
+.slick-dots li {
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 10px !important;
+}
+
+.slick-dots li button {
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  background-color: transparent !important;
+  border: 2px solid white !important;
+}
+
+.slick-dots li.slick-active button {
+  background-color: white !important;
+}
+
+.slick-prev {
+  left: 10px !important;
+}
+
+.slick-next {
+  right: 10px !important;
+}
+
+.custom-dots li {
+  width: 20px !important; /* Doira o'lchami */
+  height: 20px !important;
+}
+
+.custom-dots li button {
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+}

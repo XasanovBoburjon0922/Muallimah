@@ -1,0 +1,31 @@
+.slick-dots li.slick-active button {
+  background-color: white !important;
+}
+
+.slick-prev {
+  left: 10px !important;
+}
+
+.slick-next {
+  right: 10px !important;
+}
+
+.custom-dots li {
+  width: 10px !important; /* Doira o'lchami */
+  height: 10px !important;
+}
+
+.custom-dots li button {
+  width: 10px !important;
+  height: 10px !important;
+  border-radius: 50% !important;
+}
+
+/* Carousel dots uchun stil */
+.custom-dots li button {
+  background-color: #ccc !important;
+}
+
+.custom-dots li.slick-active button {
+  background-color: #1890ff !important;
+}
