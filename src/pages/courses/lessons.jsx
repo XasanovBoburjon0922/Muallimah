@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import axios from "axios"
+import ReactQuill from "react-quill"
+import "react-quill/dist/quill.snow.css"
 
 const Lessons = () => {
   const [lessonContent, setLessonContent] = useState([])
@@ -57,7 +59,6 @@ const Lessons = () => {
         }
       )
       alert("Dars muvaffaqiyatli yakunlandi!")
-      // Optionally, you can redirect the user or update the state
     } catch (error) {
       console.error("Error finishing lesson:", error)
       alert("Darsni yakunlashda xatolik yuz berdi. Iltimos, keyinroq urinib ko'ring.")
@@ -78,7 +79,6 @@ const Lessons = () => {
 
   return (
     <div className="mx-auto p-5 max-w-6xl">
-      {/* Progress Navigation */}
       <div className="flex items-center gap-3 mb-6">
         <button
           className="hover:bg-gray-100 p-2 rounded text-2xl"
@@ -100,7 +100,6 @@ const Lessons = () => {
         </button>
       </div>
 
-      {/* Lesson Content */}
       {lessonContent[currentLesson] && (
         <div className="space-y-6">
           {lessonContent[currentLesson].video_url && (
@@ -118,8 +117,12 @@ const Lessons = () => {
           <p><strong>Course Thema:</strong> {lessonContent[currentLesson].course_thema}</p>
           <p><strong>Tasks:</strong> {lessonContent[currentLesson].tasks}</p>
 
-
-          <p className="text-gray-700 leading-relaxed">{lessonContent[currentLesson].description}</p>
+          <ReactQuill
+            value={lessonContent[currentLesson].description}
+            readOnly={true}
+            theme={"snow"}
+            modules={{ toolbar: false }}
+          />
 
           <div className="flex gap-4">
             {!isLastLesson && (
