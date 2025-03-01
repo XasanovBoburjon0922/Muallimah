@@ -131,12 +131,12 @@ export default function Orders() {
     {
       title: "Date",
       dataIndex: "CreatedAt",
-      render: (date) => dayjs(date).format("DD MMMM YYYY, HH:mm A"),
+      render: (date) => dayjs(date).format("DD MMMM YYYY, HH:mm"),
     },
     {
       title: "Amount",
       dataIndex: "total_price",
-      render: (price) => `$${Number.parseFloat(price).toFixed(2)}`,
+      render: (price) => `${Number.parseFloat(price).toFixed(2)} so'm`,
     },
     {
       title: "Status Order",

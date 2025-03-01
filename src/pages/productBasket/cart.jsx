@@ -184,6 +184,9 @@ function Cart() {
       // Buyurtma muvaffaqiyatli berilganligini bildirish
       setIsOrderPlaced(true);
       message.success('Buyurtma muvaffaqiyatli berildi');
+
+      // Foydalanuvchini /orders sahifasiga yo'naltirish
+      window.location.href = "/user-panel/orders"; // Navigate qilish
     } catch (error) {
       message.error(error.message);
     }
@@ -216,7 +219,6 @@ function Cart() {
       </div>
     );
   }
-
 
   return (
     <div className="mx-auto p-4 md:p-6 max-w-7xl">
@@ -255,21 +257,30 @@ function Cart() {
                   <div className="mb-4 text-gray-500 text-sm">{t("seller")}</div>
 
                   <div className="flex justify-between items-center">
-                    <InputNumber
-                      min={1}
-                      value={item.count} // `defaultValue` o'rniga `value` ishlating
-                      className="border rounded w-24"
-                      onChange={(value) => {
-                        if (value > item.count) {
-                          handleUpdateCount(item.id, value, "+");
-                        } else if (value < item.count) {
-                          handleUpdateCount(item.id, value, "-");
-                        }
-                      }}
-                    />
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="text"
+                        size="small"
+                        onClick={() => {
+                          if (item.count > 1) {
+                            handleUpdateCount(item.id, item.count - 1, "-");
+                          }
+                        }}
+                        disabled={item.count <= 1} // Agar miqdor 1 bo'lsa, tugmani disable qilish
+                      >
+                        -
+                      </Button>
+                      <span className="font-medium text-lg">{item.count}</span> {/* Miqdorni ko'rsatish */}
+                      <Button
+                        type="text"
+                        size="small"
+                        onClick={() => handleUpdateCount(item.id, item.count + 1, "+")}
+                      >
+                        +
+                      </Button>
+                    </div>
                     <div>
                       <div className="font-medium text-lg">{item.price} so'm</div>
-                      {/* <div className="text-gray-400 text-sm line-through">30 so'm</div> */}
                     </div>
                   </div>
                 </div>
