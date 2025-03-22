@@ -27,8 +27,6 @@ export default function Courses() {
   })
 
   const { data: allCategory } = useGetList(endpoints.category.list, {
-    page: 1,
-    limit: 10,
     language: i18n.language,
   })
 
@@ -56,7 +54,7 @@ export default function Courses() {
     try {
       // Kursning batafsil ma'lumotlarini olish uchun API so'rov
       const response = await fetch(
-        `https://beta.themuallimah.uz/v1/course/details/{id}?id=${courseId}`,
+        `https://beta.themuallimah.uz/v1/course/details/${courseId}`,
         {
           method: "GET",
           headers: {

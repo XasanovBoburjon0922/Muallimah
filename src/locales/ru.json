@@ -52,5 +52,18 @@
   "students_worldwide": "Студенты по всему миру",
   "courses": "Курсы",
   "all_posts": "Все посты",
-  "order_placed": "Заказ размещен"
+  "order_placed": "Заказ размещен",
+  "loading": "Загрузка...",
+  "error": "Ошибка",
+  "course_name": "Название курса",
+  "teacher_name": "Имя учителя",
+  "teacher_experience": "Опыт учителя",
+  "course_description": "Описание курса",
+  "lesson_title": "Название урока",
+  "mentor": "Ментор",
+  "course_price": "Цена курса",
+  "sum": "сум",
+  "buy": "Купить",
+  "course_instructors": "Преподаватели курса",
+  "course_thumbnail": "Изображение курса"
 }

@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom"
 import axios from "axios"
 import ReactQuill from "react-quill"
 import "react-quill/dist/quill.snow.css"
+import YouTubeStylePlayer from "../../components/youtubeplayer/youtubeplayer"
 
 const Lessons = () => {
   const [lessonContent, setLessonContent] = useState([])
@@ -24,6 +25,7 @@ const Lessons = () => {
             Authorization: `Bearer ${token}`,
           },
         })
+        console.log(response.data)
 
         if (Array.isArray(response.data.lessons)) {
           setLessonContent(response.data.lessons)
@@ -56,7 +58,7 @@ const Lessons = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       )
       alert("Dars muvaffaqiyatli yakunlandi!")
     } catch (error) {
@@ -81,20 +83,19 @@ const Lessons = () => {
     <div className="mx-auto p-5 max-w-6xl">
       <div className="flex items-center gap-3 mb-6">
         <button
-          className="hover:bg-gray-100 p-2 rounded text-2xl"
+          className="hover:bg-gray-100 mb-[5px] rounded text-2xl"
           onClick={() => setCurrentLesson((prev) => Math.max(0, prev - 1))}
+          disabled={currentLesson === 0}
         >
           ←
         </button>
-        <div className="relative flex-1 bg-gray-200 h-1">
-          <div
-            className="bg-green-600 p-[6px] rounded-md h-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
+        <div className="relative flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
+          <div className="bg-green-600 h-full transition-all duration-300" style={{ width: `${progress}%` }} />
         </div>
         <button
-          className="hover:bg-gray-100 p-2 rounded text-2xl"
+          className="hover:bg-gray-100 mb-[5px] rounded text-2xl"
           onClick={() => setCurrentLesson((prev) => Math.min(totalLessons - 1, prev + 1))}
+          disabled={isLastLesson}
         >
           →
         </button>
@@ -103,19 +104,18 @@ const Lessons = () => {
       {lessonContent[currentLesson] && (
         <div className="space-y-6">
           {lessonContent[currentLesson].video_url && (
-            <div className="flex justify-center rounded-lg overflow-hidden">
-              <video
-                controls
-                src={lessonContent[currentLesson].video_url}
-                className="w-[500px] h-[500px] aspect-video"
-              />
+            <div className="shadow-lg rounded-lg overflow-hidden">
+              <YouTubeStylePlayer videoUrl={lessonContent[currentLesson].video_url} />
             </div>
           )}
 
           <h1 className="font-semibold text-2xl">{lessonContent[currentLesson].title}</h1>
-          <p><strong>Course Name:</strong> {lessonContent[currentLesson].course_name}</p>
-          <p><strong>Course Thema:</strong> {lessonContent[currentLesson].course_thema}</p>
-          <p><strong>Tasks:</strong> {lessonContent[currentLesson].tasks}</p>
+          <p>
+            <strong>Course Name:</strong> {lessonContent[currentLesson].course_name}
+          </p>
+          <p>
+            <strong>Tasks:</strong> {lessonContent[currentLesson].tasks}
+          </p>
 
           <ReactQuill
             value={lessonContent[currentLesson].description}
@@ -150,3 +150,4 @@ const Lessons = () => {
 }
 
 export default Lessons
+

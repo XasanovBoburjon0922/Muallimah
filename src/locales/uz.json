@@ -53,5 +53,18 @@
   "students_worldwide":"Butun dunyo bo'ylab talabalar",
   "courses": "Kurslar",
   "all_posts": "Barcha postlar",
-  "order_placed": "Buyurtma berilgan"
+  "order_placed": "Buyurtma berilgan",
+  "loading": "Yuklanmoqda...",
+  "error": "Xatolik",
+  "course_name": "Kurs nomi",
+  "teacher_name": "O'qituvchi nomi",
+  "teacher_experience": "O'qituvchi tajribasi",
+  "course_description": "Kurs tavsifi",
+  "lesson_title": "Dars nomi",
+  "mentor": "Mentor",
+  "course_price": "Kurs narxi",
+  "sum": "so'm",
+  "buy": "Xarid qilish",
+  "course_instructors": "Kurs o'qituvchilari",
+  "course_thumbnail": "Kurs rasmi"
 }
