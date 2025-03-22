@@ -6,6 +6,7 @@ import axios from "axios"
 import ReactQuill from "react-quill"
 import "react-quill/dist/quill.snow.css"
 import YouTubeStylePlayer from "../../components/youtubeplayer/youtubeplayer"
+import { useTranslation } from "react-i18next" // Tarjima uchun hook
 
 const Lessons = () => {
   const [lessonContent, setLessonContent] = useState([])
@@ -13,35 +14,45 @@ const Lessons = () => {
   const [error, setError] = useState(null)
   const [currentLesson, setCurrentLesson] = useState(0)
   const { id } = useParams()
+  const { t, i18n } = useTranslation() // Tarjima uchun
+
+  // Tilni o'zgartirish funksiyasi
+  const changeLanguage = (language) => {
+    i18n.changeLanguage(language)
+    fetchLessons(language) // Til o'zgarganida darslarni qayta yuklash
+  }
 
   useEffect(() => {
-    const fetchLessons = async () => {
-      const userData = JSON.parse(localStorage.getItem("muallimah-user"))
-      const token = userData?.access_token
+    fetchLessons(i18n.language) // Komponent yuklanganda darslarni yuklash
+  }, [id, i18n.language])
 
-      try {
-        const response = await axios.get(`https://beta.themuallimah.uz/v1/lesson/list?course_id=${id}`, {
+  const fetchLessons = async (language) => {
+    const userData = JSON.parse(localStorage.getItem("muallimah-user"))
+    const token = userData?.access_token
+
+    try {
+      const response = await axios.get(
+        `https://beta.themuallimah.uz/v1/lesson/list?course_id=${id}&language=${language}`, // Til parametri qo'shildi
+        {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        })
-        console.log(response.data)
-
-        if (Array.isArray(response.data.lessons)) {
-          setLessonContent(response.data.lessons)
-        } else {
-          setLessonContent([])
         }
-      } catch (error) {
-        console.error("Error fetching lessons:", error)
-        setError("Failed to fetch lessons. Please try again later.")
-      } finally {
-        setLoading(false)
-      }
-    }
+      )
+      console.log(response.data)
 
-    fetchLessons()
-  }, [id])
+      if (Array.isArray(response.data.lessons)) {
+        setLessonContent(response.data.lessons)
+      } else {
+        setLessonContent([])
+      }
+    } catch (error) {
+      console.error("Error fetching lessons:", error)
+      setError(t("fetch_error")) // Tarjima qo'llandi
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleFinishLesson = async () => {
     const userData = JSON.parse(localStorage.getItem("muallimah-user"))
@@ -58,17 +69,17 @@ const Lessons = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       )
-      alert("Dars muvaffaqiyatli yakunlandi!")
+      alert(t("lesson_finished")) // Tarjima qo'llandi
     } catch (error) {
       console.error("Error finishing lesson:", error)
-      alert("Darsni yakunlashda xatolik yuz berdi. Iltimos, keyinroq urinib ko'ring.")
+      alert(t("finish_error")) // Tarjima qo'llandi
     }
   }
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen text-lg">Loading...</div>
+    return <div className="flex justify-center items-center h-screen text-lg">{t("loading")}...</div> // Tarjima qo'llandi
   }
 
   if (error) {
@@ -111,10 +122,10 @@ const Lessons = () => {
 
           <h1 className="font-semibold text-2xl">{lessonContent[currentLesson].title}</h1>
           <p>
-            <strong>Course Name:</strong> {lessonContent[currentLesson].course_name}
+            <strong>{t("course_name")}:</strong> {lessonContent[currentLesson].course_name}
           </p>
           <p>
-            <strong>Tasks:</strong> {lessonContent[currentLesson].tasks}
+            <strong>{t("tasks")}:</strong> {lessonContent[currentLesson].tasks}
           </p>
 
           <ReactQuill
@@ -130,7 +141,7 @@ const Lessons = () => {
                 className="bg-black hover:bg-gray-900 px-6 py-3 rounded-lg text-white transition-colors"
                 onClick={() => setCurrentLesson((prev) => Math.min(totalLessons - 1, prev + 1))}
               >
-                Davom etish
+                {t("continue")}
               </button>
             )}
 
@@ -139,7 +150,7 @@ const Lessons = () => {
                 className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg text-white transition-colors"
                 onClick={handleFinishLesson}
               >
-                Darsni yakunlash
+                {t("finish_lesson")}
               </button>
             )}
           </div>
@@ -150,4 +161,3 @@ const Lessons = () => {
 }
 
 export default Lessons
-

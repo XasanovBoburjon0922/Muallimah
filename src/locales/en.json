@@ -66,5 +66,11 @@
   "sum": "sum",
   "buy": "Buy",
   "course_instructors": "Course Instructors",
-  "course_thumbnail": "Course Thumbnail"
+  "course_thumbnail": "Course Thumbnail",
+  "fetch_error": "Failed to fetch lessons. Please try again later.",
+  "lesson_finished": "Lesson successfully finished!",
+  "finish_error": "Error finishing the lesson. Please try again later.",
+  "tasks": "Tasks",
+  "continue": "Continue",
+  "finish_lesson": "Finish Lesson"
 }

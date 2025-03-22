@@ -66,5 +66,11 @@
   "sum": "so'm",
   "buy": "Xarid qilish",
   "course_instructors": "Kurs o'qituvchilari",
-  "course_thumbnail": "Kurs rasmi"
+  "course_thumbnail": "Kurs rasmi",
+  "fetch_error": "Darslarni yuklashda xatolik yuz berdi. Iltimos, keyinroq urinib ko'ring.",
+  "lesson_finished": "Dars muvaffaqiyatli yakunlandi!",
+  "finish_error": "Darsni yakunlashda xatolik yuz berdi. Iltimos, keyinroq urinib ko'ring.",
+  "tasks": "Vazifalar",
+  "continue": "Davom etish",
+  "finish_lesson": "Darsni yakunlash"
 }
