@@ -68,7 +68,7 @@ const UserCourses = () => {
           userCourses.map(course => (
             <div
               key={course.id}
-              className="shadow-md mb-6 p-4 border rounded-lg w-[200px] cursor-pointer"
+              className="shadow-md mb-6 p-4 border rounded-lg cursor-pointer"
               onClick={() => handleCourseClick(course.course_id)}
             >
               <h2 className="font-bold text-xl">{course.course_name}</h2>

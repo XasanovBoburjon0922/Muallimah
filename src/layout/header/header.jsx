@@ -304,7 +304,7 @@ export const Header = () => {
               </h1>
             </Form.Item>
             <Form.Item
-              name="email"
+              name="usernamee"
               rules={[
                 {
                   required: true,
@@ -317,7 +317,7 @@ export const Header = () => {
                   borderRadius: 0,
                   boxShadow: "none",
                 }}
-                placeholder="Email"
+                placeholder="Username"
                 className="border-x-0 border-t-0 border-b-2"
               />
             </Form.Item>

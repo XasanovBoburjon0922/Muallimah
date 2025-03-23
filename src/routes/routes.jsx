@@ -11,9 +11,10 @@ import Shop from "../pages/shop/shop";
 import Teachers from "../pages/teachers/teachers";
 import About from "../pages/about/about";
 import CourseDetails from "../pages/courses/CoursesSinglepage";
-import Cart from "../pages/productBasket/cart"
-import UserOrders from "../pages/user/pages/orders"
-import LessonPage from "../pages/courses/lessons"
+import Cart from "../pages/productBasket/cart";
+import UserOrders from "../pages/user/pages/orders";
+import LessonPage from "../pages/courses/lessons";
+import CoursesDetails from "../pages/user/pages/courcesDetail";
 
 export const publicRoutes = [
   {
@@ -56,6 +57,10 @@ export const publicRoutes = [
     path: "/teachers",
     element: <Teachers />,
   },
+  {
+    path: "/course/:courseId", // Dinamik yo'l
+    element: <CoursesDetails />,
+  },
 ];
 
 export const userRoutes = [
@@ -65,4 +70,5 @@ export const userRoutes = [
   { path: "orders", element: <UserOrders /> },
   { path: "payments", element: <UserPayment /> },
   { path: "settings", element: <UserSettings /> },
+  { path: "course/:courseId", element: <CoursesDetails /> }, // Yangi qo'shilgan yo'l
 ];
