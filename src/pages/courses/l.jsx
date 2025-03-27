@@ -12,8 +12,7 @@ const Lessons = () => {
   const [lessonContent, setLessonContent] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [currentLesson, setCurrentLesson] = useState(0)
-  const { id } = useParams() // This now represents the lesson ID from the URL
+  const { id } = useParams()
   const { t, i18n } = useTranslation()
 
   const changeLanguage = (language) => {
@@ -39,7 +38,6 @@ const Lessons = () => {
         }
       )
 
-      // Since we're getting a single lesson now, we'll wrap it in an array
       if (response.data) {
         setLessonContent([response.data])
       } else {
@@ -53,7 +51,6 @@ const Lessons = () => {
     }
   }
 
-
   if (loading) {
     return <div className="flex justify-center items-center h-screen text-lg">{t("loading")}...</div>
   }
@@ -62,7 +59,6 @@ const Lessons = () => {
     return <div className="flex justify-center items-center h-screen text-red-600 text-lg">{error}</div>
   }
 
-  // Since we're showing a single lesson now, we don't need navigation between lessons
   const currentLessonData = lessonContent[0]
 
   return (
@@ -76,12 +72,12 @@ const Lessons = () => {
           )}
 
           <h1 className="font-semibold text-2xl">{currentLessonData.title}</h1>
-          {/* <p>
+          <p>
             <strong>{t("course_name")}:</strong> {currentLessonData.course_name}
           </p>
           <p>
             <strong>{t("tasks")}:</strong> {currentLessonData.tasks}
-          </p> */}
+          </p>
 
           <ReactQuill
             value={currentLessonData.description}
@@ -89,7 +85,6 @@ const Lessons = () => {
             theme={"snow"}
             modules={{ toolbar: false }}
           />
-
         </div>
       )}
     </div>

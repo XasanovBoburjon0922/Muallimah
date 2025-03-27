@@ -10,18 +10,20 @@ export default function CourseDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [courseDetails, setCourseDetails] = useState([]);
+  const [userLessons, setUserLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const { t, i18n } = useTranslation();
   const [error, setError] = useState(null);
 
-  // Tilni o'zgartirish funksiyasi
   const changeLanguage = (language) => {
     i18n.changeLanguage(language);
-    fetchCourseDetails(language); // Til o'zgarganida kurs ma'lumotlarini qayta yuklash
+    fetchCourseDetails(language);
+    fetchUserLessons();
   };
 
   useEffect(() => {
-    fetchCourseDetails(i18n.language); // Komponent yuklanganda kurs ma'lumotlarini yuklash
+    fetchCourseDetails(i18n.language);
+    fetchUserLessons();
   }, [id, i18n.language]);
 
   const fetchCourseDetails = async (language) => {
@@ -44,11 +46,41 @@ export default function CourseDetails() {
       );
 
       if (!response.ok) {
-        throw new Error("Serverdan noto‘g‘ri javob keldi");
+        throw new Error("Serverdan noto'g'ri javob keldi");
       }
 
       const data = await response.json();
       setCourseDetails(data);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const fetchUserLessons = async () => {
+    try {
+      const userData = JSON.parse(localStorage.getItem("muallimah-user"));
+      const token = userData?.access_token;
+      if (!token) {
+        throw new Error("Foydalanuvchi tokeni topilmadi!");
+      }
+
+      const response = await fetch(
+        `https://beta.themuallimah.uz/v1/user-lessons/list?course_id=${id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Darslarni yuklashda xatolik yuz berdi");
+      }
+
+      const data = await response.json();
+      setUserLessons(data);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -67,18 +99,19 @@ export default function CourseDetails() {
   const teacherImage = courseInfo.teacher_img_url || "https://picsum.photos/300/200?random=4";
   const teacherExperience = courseInfo.experience || t("teacher_experience");
 
+  // Group lessons by module/description if needed
   const modules = [
     {
       title: courseInfo.description || t("course_description"),
-      lessons: [
-        {
-          id: courseInfo.course_lesson_id || "1",
-          icon: <Play size={20} />,
-          title: courseInfo.lesson_title || t("lesson_title"),
-          progress: "0%",
-          locked: false,
-        },
-      ],
+      lessons: userLessons.map(lesson => ({
+        id: lesson.id,
+        icon: lesson.is_unlocked ? <Play size={20} /> : <Lock size={20} />,
+        title: lesson.title,
+        progress: `${lesson.watched_progress || 0}%`,
+        locked: !lesson.is_unlocked,
+        video_url: lesson.video_url,
+        lesson_number: lesson.lesson_number
+      }))
     },
   ];
 
@@ -91,8 +124,8 @@ export default function CourseDetails() {
     },
   ];
 
-  const handleLessonClick = (courseId) => {
-    navigate(`/lessons/${courseId}`);
+  const handleLessonClick = (id) => {
+    navigate(`/lessons/${id}`);
   };
 
   return (
@@ -132,20 +165,25 @@ export default function CourseDetails() {
             {modules.map((module, idx) => (
               <div key={idx} className="bg-white shadow-sm p-4 lg:p-6 rounded-xl">
                 <h2 className="mb-4 font-semibold text-lg lg:text-xl">
-                  {idx + 1}. {module.title}
+                  {module.title}
                 </h2>
                 <div className="space-y-3">
                   {module.lessons.map((lesson, lessonIdx) => (
                     <div
                       key={lessonIdx}
-                      className="flex justify-between items-center hover:bg-gray-50 py-3 cursor-pointer"
-                      onClick={() => handleLessonClick(id, lesson.id)}
+                      className={`flex justify-between items-center hover:bg-gray-50 py-3 ${lesson.locked ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
+                      onClick={() => !lesson.locked && handleLessonClick(lesson.id)}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex justify-center items-center bg-[#0F172A] rounded-lg w-8 lg:w-10 h-8 lg:h-10 text-white">
+                        <div className={`flex justify-center items-center rounded-lg w-8 lg:w-10 h-8 lg:h-10 ${lesson.locked ? 'bg-gray-400' : 'bg-[#0F172A] text-white'}`}>
                           {lesson.icon}
                         </div>
-                        <span className="font-medium text-sm lg:text-base">{lesson.title}</span>
+                        <div>
+                          <span className="font-medium text-sm lg:text-base">{lesson.title}</span>
+                          {lesson.lesson_number && (
+                            <p className="text-gray-500 text-xs">Dars {lesson.lesson_number}</p>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="bg-gray-100 rounded-full w-24 lg:w-32 h-2">
