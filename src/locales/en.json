@@ -72,5 +72,6 @@
   "finish_error": "Error finishing the lesson. Please try again later.",
   "tasks": "Tasks",
   "continue": "Continue",
-  "finish_lesson": "Finish Lesson"
+  "finish_lesson": "Finish Lesson",
+  "back_to_blogs":"Back to Blogs"
 }

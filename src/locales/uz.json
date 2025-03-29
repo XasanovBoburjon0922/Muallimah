@@ -72,5 +72,6 @@
   "finish_error": "Darsni yakunlashda xatolik yuz berdi. Iltimos, keyinroq urinib ko'ring.",
   "tasks": "Vazifalar",
   "continue": "Davom etish",
-  "finish_lesson": "Darsni yakunlash"
+  "finish_lesson": "Darsni yakunlash",
+  "back_to_blogs":"Blog sahifaga qaytish"
 }

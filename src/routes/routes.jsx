@@ -15,6 +15,7 @@ import Cart from "../pages/productBasket/cart";
 import UserOrders from "../pages/user/pages/orders";
 import LessonPage from "../pages/courses/lessons";
 import CoursesDetails from "../pages/user/pages/courcesDetail";
+import BlogDetail from "../pages/blogs/blog-detail";
 
 export const publicRoutes = [
   {
@@ -28,6 +29,10 @@ export const publicRoutes = [
   {
     path: "/blogs",
     element: <Blogs />,
+  },
+  {
+    path: "/blogs/:id",
+    element: <BlogDetail />,
   },
   {
     path: "/about",
