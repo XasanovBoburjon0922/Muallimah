@@ -18,14 +18,19 @@ import { useCart } from "../../Context/context";
 
 export const Header = () => {
   const { t } = useTranslation();
-  const location = useLocation();
   const [open, setOpen] = React.useState(false);
   const [isModalVisible, setIsModalVisible] = React.useState(false);
   const { mutate, isPending } = useCreate(endpoints.auth.login, "");
-  const { cartCount, fetchCart } = useCart(); // Savatdagi mahsulotlar soni va yangilash funksiyasi
 
   const user = loadState("muallimah-user");
   const navigate = useNavigate();
+  const location = useLocation();
+  const { cartCount, fetchCart, setCurrentPage } = useCart();
+
+  // Komponent yuklanganda joriy sahifani o'rnatish
+  useEffect(() => {
+    setCurrentPage(location.pathname);
+  }, [location.pathname, setCurrentPage]);
 
   useEffect(() => {
     fetchCart(); // Komponent yuklanganda savatdagi ma'lumotlarni yangilash

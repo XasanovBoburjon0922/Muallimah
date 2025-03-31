@@ -3,6 +3,7 @@ import { Layout, Menu, Input, Checkbox, Slider, Card, Button, Pagination, messag
 import { FiShoppingBag, FiFilter } from "react-icons/fi";
 import { useCart } from "../../Context/context";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
 
 const { Sider, Content } = Layout;
 const { Search } = Input;
@@ -21,6 +22,12 @@ const Books = () => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const { t, i18n } = useTranslation();
   const { addToCart } = useCart(); // Savatga qo'shish funksiyasini olish
+  const location = useLocation();
+
+  // Komponent yuklanganda joriy sahifani o'rnatish
+  useEffect(() => {
+    setCurrentPage(location.pathname);
+  }, [location.pathname, setCurrentPage]);
 
   // Kitoblarni API dan olish
   const fetchBooks = async (page = 1, categoryIds = [], search = "") => {

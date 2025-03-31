@@ -2,46 +2,50 @@
 import { useState, useEffect } from 'react';
 import { Button, InputNumber, message, Modal } from 'antd';
 import { DeleteOutlined, EnvironmentOutlined } from '@ant-design/icons';
-import { useCart } from '../../Context/context'; // CartContext ni import qilish
-import { useTranslation } from 'react-i18next'; // useTranslation hookini import qilish
+import { useCart } from '../../Context/context';
+import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom'; // React Router'dan useLocation import qilamiz
 
-// Tokenni olish uchun funksiya
 const getToken = () => {
   const user = JSON.parse(localStorage.getItem("muallimah-user"));
   return user ? user.access_token : null;
 };
 
-// Bugungi sanani olish va formatlash (o'zbek tilida)
 const getFormattedDate = () => {
   const date = new Date();
   const day = date.getDate();
-
-  // Oylar nomlarini o'zbek tilida belgilash
   const months = [
     "Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun",
     "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"
   ];
-
-  const monthName = months[date.getMonth()]; // Oylar nomini olish
-
-  return `${day}-${monthName}`; // Format: "25-May"
+  const monthName = months[date.getMonth()];
+  return `${day}-${monthName}`;
 };
 
 function Cart() {
+  const location = useLocation(); // React Router'dan joriy location ni olish
   const [cartData, setCartData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modalni boshqarish
-  const [selectedItemId, setSelectedItemId] = useState(null); // Tanlangan mahsulot IDsi
-  const [isOrderPlaced, setIsOrderPlaced] = useState(false); // Buyurtma berilganligini saqlash
-  const { fetchCart } = useCart(); // useCart hooki orqali fetchCart ni olish
-  const { t, i18n } = useTranslation(); // useTranslation hookini ishlatish
-
-  // Bugungi sana
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState(null);
+  const [isOrderPlaced, setIsOrderPlaced] = useState(false);
+  const { t, i18n } = useTranslation();
   const deliveryDate = getFormattedDate();
+  const { fetchCart, setCurrentPage } = useCart();
 
-  // Savatchani yuklash
+  // Komponent yuklanganda joriy sahifani o'rnatish
+  useEffect(() => {
+    setCurrentPage(location.pathname);
+  }, [location.pathname, setCurrentPage])
+
+  // API so'rovlarini faqat allowed sahifalarda ishlatish
+  const allowedPaths = ['/books', '/shop', '/cart'];
+  const isAllowedPath = allowedPaths.includes(location.pathname);
+
   const fetchCartData = async () => {
+    if (!isAllowedPath) return; // Ruxsat berilmagan sahifalarda API so'rov yubormaymiz
+
     try {
       const token = getToken();
       if (!token) {
@@ -55,9 +59,7 @@ function Cart() {
       });
 
       if (!response.ok) {
-        // Agar API so'rovi muvaffaqiyatsiz bo'lsa, foydalanuvchiga xabar ko'rsatamiz
-        // message.error('Savatingiz boʻsh yoki maʼlumotlarni yuklashda xatolik yuz berdi.');
-        setCartData({ items: [], total_count: 0, total_price: 0 }); // Savatni bo'sh qilamiz
+        setCartData({ items: [], total_count: 0, total_price: 0 });
         return;
       }
 
@@ -65,7 +67,7 @@ function Cart() {
       setCartData(data);
     } catch (error) {
       setError(error.message);
-      message.error('Xatolik yuz berdi: ' + error.message); // Xatolik xabarini ko'rsatamiz
+      message.error('Xatolik yuz berdi: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -73,8 +75,7 @@ function Cart() {
 
   useEffect(() => {
     fetchCartData();
-  }, []);
-
+  }, [location.pathname]); // Path o'zgarganda yangilash
   // Modalni ochish
   const showDeleteModal = (basketId) => {
     setSelectedItemId(basketId); // Tanlangan mahsulot IDsi
@@ -192,9 +193,10 @@ function Cart() {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+
+  if (loading && isAllowedPath) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
-  // Savat bo'sh bo'lganda chiroyli xabar ko'rsatish
+
   if (!cartData || cartData.items.length === 0) {
     return (
       <div className="mx-auto p-4 md:p-6 max-w-7xl">

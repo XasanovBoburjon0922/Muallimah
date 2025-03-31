@@ -6,14 +6,18 @@ const CartContext = createContext();
 export const CartProvider = ({ children }) => {
   const [cartCount, setCartCount] = useState(0);
   const [cartItems, setCartItems] = useState([]);
+  const [activePage, setActivePage] = useState(null);
 
   const getToken = () => {
     const user = JSON.parse(localStorage.getItem("muallimah-user"));
     return user ? user.access_token : null;
   };
 
-  // Savatdagi mahsulotlarni yangilash
+  // Faqat ruxsat berilgan sahifalarda ishlaydigan fetchCart
   const fetchCart = useCallback(async () => {
+    const allowedPages = ['/books', '/shop', '/cart', '/'];
+    if (!allowedPages.includes(activePage)) return;
+
     const token = getToken();
     if (!token) {
       console.log("Token mavjud emas. Foydalanuvchi tizimga kirmagan.");
@@ -26,16 +30,20 @@ export const CartProvider = ({ children }) => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("API Response:", response.data); // Debug uchun
       setCartItems(response.data.items || []);
-      setCartCount(response.data.total_count || 0); // Savatdagi mahsulotlar sonini yangilash
+      setCartCount(response.data.total_count || 0);
     } catch (error) {
       console.error("Savat ma'lumotlarini olishda xatolik:", error);
     }
-  }, []);
+  }, [activePage]);
 
-  // Savatga mahsulot qo'shish
+  // Savatga mahsulot qo'shish (faqat ruxsat berilgan sahifalarda)
   const addToCart = async (productId) => {
+    const allowedPages = ['/books', '/shop', '/cart'];
+    if (!allowedPages.includes(activePage)) {
+      return "Savat faqat Books va Shop sahifalarida ishlaydi";
+    }
+    
     const token = getToken();
     if (!token) {
       return "Iltimos, avval tizimga kiring!";
@@ -55,12 +63,9 @@ export const CartProvider = ({ children }) => {
         }
       );
   
-      console.log("Add to Cart Response:", response.data); // Debug uchun
-  
-      // Agar status kodi 200-299 oraliqda bo'lsa, muvaffaqiyatli deb hisoblaymiz
       if (response.status >= 200 && response.status < 300) {
-        await fetchCart(); // Savatni yangilash
-        return null; // Xatolik yo'q
+        await fetchCart();
+        return null;
       } else {
         return "Bu mahsulot savatingizda mavjud!";
       }
@@ -70,13 +75,24 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  // Joriy sahifani o'rnatish funksiyasi
+  const setCurrentPage = (path) => {
+    setActivePage(path);
+  };
+
   // Komponent yuklanganda savatni yuklash
   useEffect(() => {
     fetchCart();
   }, [fetchCart]);
 
   return (
-    <CartContext.Provider value={{ cartCount, cartItems, addToCart, fetchCart }}>
+    <CartContext.Provider value={{ 
+      cartCount, 
+      cartItems, 
+      addToCart, 
+      fetchCart,
+      setCurrentPage // Joriy sahifani o'rnatish funksiyasi
+    }}>
       {children}
     </CartContext.Provider>
   );
