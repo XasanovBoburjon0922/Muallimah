@@ -71,7 +71,7 @@ const Lessons = () => {
         <div className="space-y-6">
           {currentLessonData.video_url && (
             <div className="shadow-lg rounded-lg overflow-hidden">
-              <YouTubeStylePlayer videoUrl={currentLessonData.video_url} />
+              <YouTubeStylePlayer videoUrl={currentLessonData.video_url} lessonId={currentLessonData.id}/>
             </div>
           )}
 
