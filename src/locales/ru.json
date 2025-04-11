@@ -72,5 +72,6 @@
   "tasks": "Задания",
   "continue": "Продолжить",
   "finish_lesson": "Завершить урок",
-  "back_to_blogs":"Вернуться к блогам"
+  "back_to_blogs":"Вернуться к блогам",
+  "no_lessons_available": "Нет доступных уроков"
 }

@@ -47,7 +47,7 @@ const UserLayout = () => {
   // Foydalanuvchi qaysi sahifada turganligini aniqlash
   const getPageTitle = () => {
     const currentPage = navItems.find((item) => item.to === location.pathname);
-    return currentPage ? `My ${currentPage.label}` : "Dashboard";
+    return currentPage ? `My ${currentPage.label}` : "My Lessons";
   };
 
   return (

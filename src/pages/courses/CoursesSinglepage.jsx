@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 export default function CourseDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [courseDetails, setCourseDetails] = useState([]);
+  const [courseDetails, setCourseDetails] = useState({});
   const [userLessons, setUserLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const { t, i18n } = useTranslation();
@@ -50,7 +50,7 @@ export default function CourseDetails() {
       }
 
       const data = await response.json();
-      setCourseDetails(data);
+      setCourseDetails(data || {});
     } catch (error) {
       setError(error.message);
     }
@@ -80,9 +80,11 @@ export default function CourseDetails() {
       }
 
       const data = await response.json();
-      setUserLessons(data);
+      // Handle case where data is null or not an array
+      setUserLessons(Array.isArray(data) ? data : []);
     } catch (error) {
       setError(error.message);
+      setUserLessons([]); // Set empty array if there's an error
     } finally {
       setLoading(false);
     }
@@ -103,10 +105,10 @@ export default function CourseDetails() {
   const modules = [
     {
       title: courseInfo.description || t("course_description"),
-      lessons: userLessons.map(lesson => ({
+      lessons: (Array.isArray(userLessons) ? userLessons : []).map(lesson => ({
         id: lesson.id,
         icon: lesson.is_unlocked ? <Play size={20} /> : <Lock size={20} />,
-        title: lesson.title,
+        title: lesson.title || t("untitled_lesson"),
         progress: `${lesson.watched_progress || 0}%`,
         locked: !lesson.is_unlocked,
         video_url: lesson.video_url,
@@ -125,7 +127,9 @@ export default function CourseDetails() {
   ];
 
   const handleLessonClick = (id) => {
-    navigate(`/lessons/${id}`);
+    if (id) {
+      navigate(`/lessons/${id}`);
+    }
   };
 
   return (
@@ -168,31 +172,37 @@ export default function CourseDetails() {
                   {module.title}
                 </h2>
                 <div className="space-y-3">
-                  {module.lessons.map((lesson, lessonIdx) => (
-                    <div
-                      key={lessonIdx}
-                      className={`flex justify-between items-center hover:bg-gray-50 py-3 ${lesson.locked ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
-                      onClick={() => !lesson.locked && handleLessonClick(lesson.id)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`flex justify-center items-center rounded-lg w-8 lg:w-10 h-8 lg:h-10 ${lesson.locked ? 'bg-gray-400' : 'bg-[#0F172A] text-white'}`}>
-                          {lesson.icon}
+                  {module.lessons.length > 0 ? (
+                    module.lessons.map((lesson, lessonIdx) => (
+                      <div
+                        key={lessonIdx}
+                        className={`flex justify-between items-center hover:bg-gray-50 py-3 ${lesson.locked ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
+                        onClick={() => !lesson.locked && handleLessonClick(lesson.id)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`flex justify-center items-center rounded-lg w-8 lg:w-10 h-8 lg:h-10 ${lesson.locked ? 'bg-gray-400' : 'bg-[#0F172A] text-white'}`}>
+                            {lesson.icon}
+                          </div>
+                          <div>
+                            <span className="font-medium text-sm lg:text-base">{lesson.title}</span>
+                            {lesson.lesson_number && (
+                              <p className="text-gray-500 text-xs">Dars {lesson.lesson_number}</p>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <span className="font-medium text-sm lg:text-base">{lesson.title}</span>
-                          {lesson.lesson_number && (
-                            <p className="text-gray-500 text-xs">Dars {lesson.lesson_number}</p>
-                          )}
+                        <div className="flex items-center gap-2">
+                          <div className="bg-gray-100 rounded-full w-24 lg:w-32 h-2">
+                            <div className="bg-[#0F172A] rounded-full h-full" style={{ width: lesson.progress }} />
+                          </div>
+                          <span className="min-w-[40px] text-gray-500 text-sm">{lesson.progress}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="bg-gray-100 rounded-full w-24 lg:w-32 h-2">
-                          <div className="bg-[#0F172A] rounded-full h-full" style={{ width: lesson.progress }} />
-                        </div>
-                        <span className="min-w-[40px] text-gray-500 text-sm">{lesson.progress}</span>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="py-4 text-gray-500 text-center">
+                      {t("no_lessons_available")}
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             ))}

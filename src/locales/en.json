@@ -73,5 +73,6 @@
   "tasks": "Tasks",
   "continue": "Continue",
   "finish_lesson": "Finish Lesson",
-  "back_to_blogs":"Back to Blogs"
+  "back_to_blogs":"Back to Blogs",
+  "no_lessons_available": "No lessons available"
 }

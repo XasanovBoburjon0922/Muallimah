@@ -43,7 +43,7 @@ export const publicRoutes = [
     element: <Courses />,
   },
   {
-    path: "/courses/:id", // Dinamik yo'l
+    path: "/course/:id", // Dinamik yo'l
     element: <CourseDetails />,
   },
   {
@@ -61,11 +61,7 @@ export const publicRoutes = [
   {
     path: "/teachers",
     element: <Teachers />,
-  },
-  {
-    path: "/course/:courseId", // Dinamik yo'l
-    element: <CoursesDetails />,
-  },
+  }
 ];
 
 export const userRoutes = [
@@ -75,5 +71,5 @@ export const userRoutes = [
   { path: "orders", element: <UserOrders /> },
   { path: "payments", element: <UserPayment /> },
   { path: "settings", element: <UserSettings /> },
-  { path: "course/:courseId", element: <CoursesDetails /> }, // Yangi qo'shilgan yo'l
+  { path: "my-courses/:courseId", element: <CoursesDetails /> }, // Yangi qo'shilgan yo'l
 ];

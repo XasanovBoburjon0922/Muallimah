@@ -44,7 +44,7 @@ const UserCourses = () => {
   }, []);
 
   const handleCourseClick = (courseId) => {
-    navigate(`/course/${courseId}`);
+    navigate(`/user-panel/my-courses/${courseId}`);
   };
 
   if (loading) {

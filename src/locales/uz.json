@@ -73,5 +73,6 @@
   "tasks": "Vazifalar",
   "continue": "Davom etish",
   "finish_lesson": "Darsni yakunlash",
-  "back_to_blogs":"Blog sahifaga qaytish"
+  "back_to_blogs":"Blog sahifaga qaytish",
+  "no_lessons_available": "Hozircha darslar mavjud emas"
 }
