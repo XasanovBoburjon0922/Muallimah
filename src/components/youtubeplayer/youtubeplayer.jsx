@@ -1,11 +1,11 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { Play, Pause, Volume2, Settings, Maximize } from "lucide-react"
 import Hls from "hls.js"
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, Settings, SkipBack, SkipForward } from "lucide-react"
 import axios from "axios"
 
-export default function YouTubeStylePlayer({ videoUrl, lessonId }) {
+export default function VideoPlayer({ videoUrl, lessonId }) {
   // Refs
   const videoRef = useRef(null)
   const playerRef = useRef(null)
@@ -24,16 +24,15 @@ export default function YouTubeStylePlayer({ videoUrl, lessonId }) {
   const [currentTime, setCurrentTime] = useState(0)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showControls, setShowControls] = useState(true)
+  const [showSettings, setShowSettings] = useState(false)
   const [qualities, setQualities] = useState([])
   const [selectedQuality, setSelectedQuality] = useState(-1)
-  const [showSettings, setShowSettings] = useState(false)
   const [initialLoad, setInitialLoad] = useState(true)
   const [watchedProgress, setWatchedProgress] = useState(0)
   const [lastWatchedTime, setLastWatchedTime] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
-   // Yangi localStorage kaliti
-   const [storageKey] = useState(`video-progress-${lessonId}`)
+  const [storageKey] = useState(`video-progress-${lessonId}`)
 
   // Get user token from localStorage
   const getAuthToken = () => {
@@ -42,21 +41,6 @@ export default function YouTubeStylePlayer({ videoUrl, lessonId }) {
       return userData?.access_token
     }
     return null
-  }
-
-  // Toggle fullscreen
-  const toggleFullscreen = () => {
-    const player = playerRef.current
-    if (!player) return
-
-    if (!document.fullscreenElement) {
-      player.requestFullscreen()
-        .then(() => setIsFullscreen(true))
-        .catch(err => console.error("Fullscreen error:", err))
-    } else {
-      document.exitFullscreen()
-      setIsFullscreen(false)
-    }
   }
 
   // Initialize HLS
@@ -123,10 +107,10 @@ export default function YouTubeStylePlayer({ videoUrl, lessonId }) {
     }
   }
 
-  // O'zgartirilgan loadSavedProgress funksiyasi
+  // Load saved progress
   const loadSavedProgress = async () => {
     try {
-      // Avval localStorage'dan yuklash
+      // Load from localStorage first
       const localData = localStorage.getItem(storageKey)
       if (localData) {
         const { timestamp, watchedProgress } = JSON.parse(localData)
@@ -134,7 +118,7 @@ export default function YouTubeStylePlayer({ videoUrl, lessonId }) {
         setLastWatchedTime(timestamp)
       }
 
-      // Keyin serverdan yuklash (agar token va lessonId bo'lsa)
+      // Then load from server (if token and lessonId exist)
       const token = getAuthToken()
       if (!token || !lessonId) return
 
@@ -161,20 +145,19 @@ export default function YouTubeStylePlayer({ videoUrl, lessonId }) {
     }
   }
 
-
-  // O'zgartirilgan saveWatchTime funksiyasi
+  // Save watch time
   const saveWatchTime = async (timestamp, watchedProgress) => {
     try {
       const token = getAuthToken()
       
-      // LocalStorage ga saqlash
+      // Save to localStorage
       localStorage.setItem(storageKey, JSON.stringify({
         timestamp,
         watchedProgress,
         lastUpdated: Date.now()
       }))
 
-      // APIga yuborish (token va lessonId bor bo'lsa)
+      // Send to API (if token and lessonId exist)
       if (token && lessonId) {
         await axios.put(
           `https://beta.themuallimah.uz/v1/user/lessons/watch-time/${lessonId}`,
@@ -252,24 +235,26 @@ export default function YouTubeStylePlayer({ videoUrl, lessonId }) {
     saveWatchTime(newTime, watchedProgress)
   }
 
-  // Skip forward/backward
-  const skip = (seconds) => {
-    const video = videoRef.current
-    if (!video || !duration) return
-
-    const newTime = Math.min(Math.max(video.currentTime + seconds, 0), duration)
-    video.currentTime = newTime
-    setCurrentTime(newTime)
-    
-    const watchedProgress = Math.round((newTime / duration) * 100)
-    saveWatchTime(newTime, watchedProgress)
-  }
-
   // Format time
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60)
     const seconds = Math.floor(time % 60)
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`
+    return `${minutes < 10 ? "0" : ""}${minutes}:${seconds < 10 ? "0" : ""}${seconds}`
+  }
+
+  // Toggle fullscreen
+  const toggleFullscreen = () => {
+    const player = playerRef.current
+    if (!player) return
+
+    if (!document.fullscreenElement) {
+      player.requestFullscreen()
+        .then(() => setIsFullscreen(true))
+        .catch(err => console.error("Fullscreen error:", err))
+    } else {
+      document.exitFullscreen()
+      setIsFullscreen(false)
+    }
   }
 
   // Change quality
@@ -364,8 +349,8 @@ export default function YouTubeStylePlayer({ videoUrl, lessonId }) {
     }
   }, [lessonId, initialLoad, lastWatchedTime, duration])
 
-   // Har bir soniyada saqlash uchun useEffect
-   useEffect(() => {
+  // Save progress every second
+  useEffect(() => {
     if (lessonId && !initialLoad) {
       if (saveIntervalRef.current) {
         clearInterval(saveIntervalRef.current)
@@ -376,7 +361,7 @@ export default function YouTubeStylePlayer({ videoUrl, lessonId }) {
           const currentProgress = (currentTime / duration) * 100
           saveWatchTime(currentTime, currentProgress)
         }
-      }, 1000) // 10 soniya o'rniga 1 soniya
+      }, 1000)
 
       return () => {
         if (saveIntervalRef.current) {
@@ -385,20 +370,21 @@ export default function YouTubeStylePlayer({ videoUrl, lessonId }) {
       }
     }
   }, [lessonId, currentTime, duration, initialLoad])
- // Sahifa yopilishida saqlash uchun useEffect
- useEffect(() => {
-  const handleBeforeUnload = () => {
-    if (videoRef.current && duration > 0) {
-      const currentProgress = (currentTime / duration) * 100
-      saveWatchTime(currentTime, currentProgress)
-    }
-  }
 
-  window.addEventListener('beforeunload', handleBeforeUnload)
-  return () => {
-    window.removeEventListener('beforeunload', handleBeforeUnload)
-  }
-}, [currentTime, duration])
+  // Save on page unload
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (videoRef.current && duration > 0) {
+        const currentProgress = (currentTime / duration) * 100
+        saveWatchTime(currentTime, currentProgress)
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [currentTime, duration])
 
   // Handle controls visibility
   useEffect(() => {
@@ -433,10 +419,18 @@ export default function YouTubeStylePlayer({ videoUrl, lessonId }) {
           e.preventDefault()
           break
         case "ArrowLeft":
-          skip(-5)
+          if (videoRef.current.currentTime > 5) {
+            videoRef.current.currentTime -= 5
+          } else {
+            videoRef.current.currentTime = 0
+          }
           break
         case "ArrowRight":
-          skip(5)
+          if (videoRef.current.currentTime < videoRef.current.duration - 5) {
+            videoRef.current.currentTime += 5
+          } else {
+            videoRef.current.currentTime = videoRef.current.duration
+          }
           break
         case "ArrowUp":
           if (videoRef.current.volume < 1) {
@@ -492,7 +486,7 @@ export default function YouTubeStylePlayer({ videoUrl, lessonId }) {
       {/* Loading Indicator */}
       {isLoading && (
         <div className="absolute inset-0 flex justify-center items-center bg-black/50">
-          <div className="border-t-2 border-red-600 border-b-2 rounded-full w-12 h-12 animate-spin"></div>
+          <div className="border-t-2 border-b-2 border-blue-500 rounded-full w-12 h-12 animate-spin"></div>
         </div>
       )}
 
@@ -507,7 +501,7 @@ export default function YouTubeStylePlayer({ videoUrl, lessonId }) {
                 setIsLoading(true)
                 initializeHLS()
               }} 
-              className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition"
+              className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded transition"
             >
               Try Again
             </button>
@@ -515,133 +509,79 @@ export default function YouTubeStylePlayer({ videoUrl, lessonId }) {
         </div>
       )}
 
+      {/* Time Display - Top Left */}
+      <div className="top-2 left-2 absolute bg-black/50 px-2 py-1 rounded text-white text-sm">
+        {formatTime(currentTime)}
+      </div>
+
       {/* Progress indicator showing watched progress from API */}
       {watchedProgress > 0 && (
-        <div className="top-0 left-0 absolute bg-red-500 h-1" style={{ width: `${watchedProgress}%` }} />
-      )}
-
-      {/* Play/Pause Button (Center) */}
-      {!isLoading && !error && (
-        <>
-          {isPlaying ? (
-            <button
-              onClick={togglePlay}
-              className="top-1/2 left-1/2 absolute bg-black/40 opacity-0 group-active:opacity-100 p-4 rounded-full transition-opacity -translate-x-1/2 -translate-y-1/2 transform"
-            >
-              <Pause className="w-8 h-8 text-white" />
-            </button>
-          ) : (
-            <button
-              onClick={togglePlay}
-              className="top-1/2 left-1/2 absolute bg-black/40 p-4 rounded-full -translate-x-1/2 -translate-y-1/2 transform"
-            >
-              <Play className="w-8 h-8 text-white" />
-            </button>
-          )}
-        </>
+        <div className="top-0 left-0 absolute bg-blue-500 h-1" style={{ width: `${watchedProgress}%` }} />
       )}
 
       {/* Controls Container */}
       {!error && (
         <div
-          className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-4 py-2 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0"}`}
+          className={`absolute bottom-0 left-0 right-0 bg-black px-4 py-2 transition-opacity duration-300 ${
+            showControls ? "opacity-100" : "opacity-0"
+          }`}
         >
-          {/* Progress Bar */}
-          <div
-            ref={progressRef}
-            className="group/progress relative bg-white/30 mb-3 rounded-full h-1 cursor-pointer"
-            onClick={handleProgressClick}
-          >
+          <div className="flex items-center gap-4">
+            {/* Play/Pause Button */}
+            <button onClick={togglePlay} className="text-white hover:text-gray-300">
+              {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
+            </button>
+
+            {/* Progress Bar */}
             <div
-              className="top-0 left-0 absolute bg-red-600 rounded-full h-full"
-              style={{ width: `${(currentTime / duration) * 100}%` }}
-            />
-            <div
-              className="top-0 left-0 absolute bg-red-600 rounded-full w-3 h-3 -translate-y-1/3"
-              style={{ left: `${(currentTime / duration) * 100}%`, display: showControls ? "block" : "none" }}
-            />
-            <div className="top-0 left-0 absolute w-full h-full group-hover/progress:h-2 transition-all" />
-          </div>
-
-          {/* Controls Row */}
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              {/* Play/Pause Button */}
-              <button onClick={togglePlay} className="text-white hover:text-gray-300">
-                {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-              </button>
-
-              {/* Skip Buttons */}
-              <button onClick={() => skip(-10)} className="text-white hover:text-gray-300">
-                <SkipBack className="w-5 h-5" />
-              </button>
-              <button onClick={() => skip(10)} className="text-white hover:text-gray-300">
-                <SkipForward className="w-5 h-5" />
-              </button>
-
-              {/* Volume Control */}
-              <div className="group/volume flex items-center gap-1">
-                <button onClick={toggleMute} className="text-white hover:text-gray-300">
-                  {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                </button>
-                <div className="w-0 group-hover/volume:w-20 overflow-hidden transition-all duration-300">
-                  <input
-                    ref={volumeRef}
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={isMuted ? 0 : volume}
-                    onChange={handleVolumeChange}
-                    className="w-20 accent-red-600"
-                  />
-                </div>
-              </div>
-
-              {/* Time Display */}
-              <div className="text-white text-sm">
-                {formatTime(currentTime)} / {formatTime(duration)}
-              </div>
+              ref={progressRef}
+              className="relative flex-1 bg-white/30 mx-2 rounded-full h-1 cursor-pointer"
+              onClick={handleProgressClick}
+            >
+              <div
+                className="top-0 left-0 absolute bg-blue-500 rounded-full h-full"
+                style={{ width: `${(currentTime / duration) * 100}%` }}
+              />
             </div>
 
-            <div className="flex items-center gap-3">
-              {/* Settings Button */}
-              <div className="relative">
-                <button onClick={() => setShowSettings(!showSettings)} className="text-white hover:text-gray-300">
-                  <Settings className="w-5 h-5" />
-                </button>
+            {/* Volume Control */}
+            <button onClick={toggleMute} className="text-white hover:text-gray-300">
+              <Volume2 className="w-6 h-6" />
+            </button>
 
-                {/* Quality Menu */}
-                {showSettings && (
-                  <div className="right-0 bottom-full absolute bg-black/90 mb-2 p-2 rounded-md w-48">
-                    <div className="mb-1 px-2 font-medium text-white text-sm">Sifat</div>
-                    <div className="max-h-40 overflow-y-auto">
-                      <button
-                        onClick={() => changeQuality(-1)}
-                        className={`w-full text-left px-2 py-1 text-sm rounded hover:bg-white/10 ${selectedQuality === -1 ? "text-red-500" : "text-white"}`}
-                      >
-                        Auto
-                      </button>
-                      {qualities.map((quality) => (
-                        <button
-                          key={quality.value}
-                          onClick={() => changeQuality(quality.value)}
-                          className={`w-full text-left px-2 py-1 text-sm rounded hover:bg-white/10 ${selectedQuality === quality.value ? "text-red-500" : "text-white"}`}
-                        >
-                          {quality.label} ({quality.bitrate} kbps)
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+            {/* Settings Button */}
+            <button onClick={() => setShowSettings(!showSettings)} className="text-white hover:text-gray-300">
+              <Settings className="w-6 h-6" />
+            </button>
 
-              {/* Fullscreen Button */}
-              <button onClick={toggleFullscreen} className="text-white hover:text-gray-300">
-                {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-              </button>
-            </div>
+            {/* Fullscreen Button */}
+            <button onClick={toggleFullscreen} className="text-white hover:text-gray-300">
+              <Maximize className="w-6 h-6" />
+            </button>
           </div>
+          {/* Settings Menu */}
+          {showSettings && (
+            <div className="right-12 bottom-14 absolute bg-black/90 p-2 rounded-md w-48">
+              <div className="mb-1 px-2 font-medium text-white text-sm">Quality</div>
+              <div className="max-h-40 overflow-y-auto">
+                <button 
+                  onClick={() => changeQuality(-1)}
+                  className={`hover:bg-white/10 px-2 py-1 rounded w-full ${selectedQuality === -1 ? "text-blue-500" : "text-white"} text-sm text-left`}
+                >
+                  Auto
+                </button>
+                {qualities.map((quality) => (
+                  <button
+                    key={quality.value}
+                    onClick={() => changeQuality(quality.value)}
+                    className={`hover:bg-white/10 px-2 py-1 rounded w-full ${selectedQuality === quality.value ? "text-blue-500" : "text-white"} text-sm text-left`}
+                  >
+                    {quality.label} ({quality.bitrate} kbps)
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
