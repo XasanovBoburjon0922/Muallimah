@@ -13,7 +13,7 @@ import { ConfigProvider } from "antd";
 
 function App() {
   return (
-    <ConfigProvider theme={{ token: { colorPrimary: "#1890ff" } }}>
+    <ConfigProvider theme={{ token: { colorPrimary: "#00235A" } }}>
       <CartProvider>
         <Routes>
           <Route path="/" element={<MainLayout />}>

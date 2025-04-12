@@ -43,7 +43,7 @@ export const publicRoutes = [
     element: <Courses />,
   },
   {
-    path: "/course/:id", // Dinamik yo'l
+    path: "/courses/:id", // Dinamik yo'l
     element: <CourseDetails />,
   },
   {
