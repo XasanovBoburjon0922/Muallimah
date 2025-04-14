@@ -74,5 +74,20 @@
   "continue": "Davom etish",
   "finish_lesson": "Darsni yakunlash",
   "back_to_blogs":"Blog sahifaga qaytish",
-  "no_lessons_available": "Hozircha darslar mavjud emas"
+  "no_lessons_available": "Hozircha darslar mavjud emas",
+  "total_installment_months": "Bo'lib to'lash oylari",
+  "payment_method": "To'lov usuli",
+  "select_payment_method": "To'lov usulini tanlang",
+  "payment_options": "To'lov Variantlari",
+  "full_payment": "To'liq To'lov",
+  "installment_payment": "Bo'lib To'lash",
+  "installment_months": "Bo'lib To'lash Oylari",
+  "pay_now_months": "Hozir To'lash (Oylar)",
+  "payment_summary": "To'lov Xulosasi",
+  "total_course_price": "Kursning Umumiy Narxi",
+  "monthly_payment": "Oylik To'lov",
+  "current_payment": "Joriy To'lov",
+  "cancel": "Bekor qilish",
+  "proceed_to_payment": "To'lovga O'tish",
+  "months": "oy"
 }

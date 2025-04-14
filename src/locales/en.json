@@ -74,5 +74,20 @@
   "continue": "Continue",
   "finish_lesson": "Finish Lesson",
   "back_to_blogs":"Back to Blogs",
-  "no_lessons_available": "No lessons available"
+  "no_lessons_available": "No lessons available",
+  "total_installment_months": "Total Installment Months",
+  "payment_method": "Payment Method",
+  "select_payment_method": "Select Payment Method",
+  "payment_options": "Payment Options",
+  "full_payment": "Pay Full Amount",
+  "installment_payment": "Pay in Installments",
+  "installment_months": "Total Installment Months",
+  "pay_now_months": "Pay Now (Months)",
+  "payment_summary": "Payment Summary",
+  "total_course_price": "Total Course Price",
+  "monthly_payment": "Monthly Payment",
+  "current_payment": "Current Payment",
+  "cancel": "Cancel",
+  "proceed_to_payment": "Proceed to Payment",
+  "months": "months"
 }

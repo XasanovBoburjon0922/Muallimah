@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { Image } from "antd";
+import { Image, Modal, Select, Radio, Button, InputNumber, message } from "antd";
 import { Lock, Play } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -14,12 +14,13 @@ export default function CourseDetails() {
   const [loading, setLoading] = useState(true);
   const { t, i18n } = useTranslation();
   const [error, setError] = useState(null);
-
-  const changeLanguage = (language) => {
-    i18n.changeLanguage(language);
-    fetchCourseDetails(language);
-    fetchUserLessons();
-  };
+  const [paymentModalVisible, setPaymentModalVisible] = useState(false);
+  const [paymentType, setPaymentType] = useState("FULL");
+  const [installmentMonths, setInstallmentMonths] = useState(1);
+  const [paidMonths, setPaidMonths] = useState(1);
+  const [paymentCalculation, setPaymentCalculation] = useState(null);
+  const [calculating, setCalculating] = useState(false);
+  const [preparingPayment, setPreparingPayment] = useState(false);
 
   useEffect(() => {
     fetchCourseDetails(i18n.language);
@@ -31,7 +32,7 @@ export default function CourseDetails() {
       const userData = JSON.parse(localStorage.getItem("muallimah-user"));
       const token = userData?.access_token;
       if (!token) {
-        throw new Error("Foydalanuvchi tokeni topilmadi!");
+        throw new Error("User token not found!");
       }
 
       const response = await fetch(
@@ -46,7 +47,7 @@ export default function CourseDetails() {
       );
 
       if (!response.ok) {
-        throw new Error("Serverdan noto'g'ri javob keldi");
+        throw new Error("Invalid response from server");
       }
 
       const data = await response.json();
@@ -61,7 +62,7 @@ export default function CourseDetails() {
       const userData = JSON.parse(localStorage.getItem("muallimah-user"));
       const token = userData?.access_token;
       if (!token) {
-        throw new Error("Foydalanuvchi tokeni topilmadi!");
+        throw new Error("User token not found!");
       }
 
       const response = await fetch(
@@ -76,19 +77,110 @@ export default function CourseDetails() {
       );
 
       if (!response.ok) {
-        throw new Error("Darslarni yuklashda xatolik yuz berdi");
+        throw new Error("Error loading lessons");
       }
 
       const data = await response.json();
-      // Handle case where data is null or not an array
       setUserLessons(Array.isArray(data) ? data : []);
     } catch (error) {
       setError(error.message);
-      setUserLessons([]); // Set empty array if there's an error
+      setUserLessons([]);
     } finally {
       setLoading(false);
     }
   };
+
+  const handleBuyClick = () => {
+    setPaymentModalVisible(true);
+    calculatePayment();
+  };
+
+  const calculatePayment = async () => {
+    try {
+      setCalculating(true);
+      const userData = JSON.parse(localStorage.getItem("muallimah-user"));
+      const token = userData?.access_token;
+      
+      const response = await fetch(
+        `https://beta.themuallimah.uz/v1/payment/calculate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            course_id: id,
+            installment_month: paymentType === "INSTALLMENT" ? installmentMonths : 0,
+            month: paymentType === "INSTALLMENT" ? paidMonths : 0
+          })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Payment calculation failed");
+      }
+
+      const data = await response.json();
+      setPaymentCalculation(data);
+    } catch (error) {
+      message.error(error.message);
+    } finally {
+      setCalculating(false);
+    }
+  };
+
+  const preparePayment = async () => {
+    try {
+      setPreparingPayment(true);
+      const userData = JSON.parse(localStorage.getItem("muallimah-user"));
+      const token = userData?.access_token;
+      
+      const payload = paymentType === "FULL" 
+        ? { 
+            courseID: id, 
+            paymentType
+          }
+        : { 
+            courseID: id, 
+            paymentType, 
+            installmentMonths, 
+            paidMonths
+          };
+
+      const response = await fetch(
+        `https://beta.themuallimah.uz/v1/payment/prepare`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Payment preparation failed");
+      }
+
+      const data = await response.json();
+      if (data.payment_url) {
+        window.location.href = data.payment_url;
+      }
+    } catch (error) {
+      message.error(error.message);
+    } finally {
+      setPreparingPayment(false);
+    }
+  };
+
+
+  useEffect(() => {
+    if (paymentModalVisible) {
+      calculatePayment();
+    }
+  }, [installmentMonths, paidMonths, paymentType]);
 
   if (loading) return <div>{t("loading")}...</div>;
   if (error) return <div>{t("error")}: {error}</div>;
@@ -101,7 +193,6 @@ export default function CourseDetails() {
   const teacherImage = courseInfo.teacher_img_url || "https://picsum.photos/300/200?random=4";
   const teacherExperience = courseInfo.experience || t("teacher_experience");
 
-  // Group lessons by module/description if needed
   const modules = [
     {
       title: courseInfo.description || t("course_description"),
@@ -155,7 +246,12 @@ export default function CourseDetails() {
                 </div>
               </div>
               <div className="flex flex-wrap justify-center lg:justify-start gap-2 mt-4">
-                <button className="bg-white px-6 py-2 rounded-lg font-medium text-[#0F172A]">{t("buy")}</button>
+                <button 
+                  className="bg-white px-6 py-2 rounded-lg font-medium text-[#0F172A]"
+                  onClick={handleBuyClick}
+                >
+                  {t("buy")}
+                </button>
                 <button className="px-4 py-2 border border-white/20 rounded-lg">U</button>
                 <button className="px-4 py-2 border border-white/20 rounded-lg">HUMO</button>
                 <button className="px-4 py-2 border border-white/20 rounded-lg">Payme</button>
@@ -230,6 +326,100 @@ export default function CourseDetails() {
           ))}
         </div>
       </div>
+      <Modal
+        title={t("payment_options")}
+        open={paymentModalVisible}
+        onCancel={() => setPaymentModalVisible(false)}
+        footer={null}
+        width={600}
+      >
+        <div className="space-y-6">
+          <Radio.Group 
+            onChange={(e) => setPaymentType(e.target.value)} 
+            value={paymentType}
+            className="w-full"
+          >
+            <div className="flex flex-col space-y-4">
+              <Radio value="FULL" className="text-lg">
+                {t("full_payment")}
+              </Radio>
+              <Radio value="INSTALLMENT" className="text-lg">
+                {t("installment_payment")}
+              </Radio>
+            </div>
+          </Radio.Group>
+
+          {paymentType === "INSTALLMENT" && (
+            <div className="space-y-4">
+              <div>
+                <label className="block mb-2">{t("total_installment_months")}</label>
+                <InputNumber
+                  min={1}
+                  max={courseDetails.duration_value || 12}
+                  value={installmentMonths}
+                  onChange={(value) => setInstallmentMonths(value)}
+                  className="w-full"
+                  disabled={calculating}
+                />
+              </div>
+
+              <div>
+                <label className="block mb-2">{t("pay_now_months")}</label>
+                <InputNumber
+                  min={1}
+                  max={installmentMonths}
+                  value={paidMonths}
+                  onChange={(value) => setPaidMonths(value)}
+                  className="w-full"
+                  disabled={calculating}
+                />
+              </div>
+            </div>
+          )}
+
+          {paymentCalculation && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="mb-2 font-semibold">{t("payment_summary")}</h4>
+              {paymentType === "FULL" ? (
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>{t("course_price")}:</span>
+                    <span className="font-medium">{paymentCalculation.course_price} {t("sum")}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>{t("total_course_price")}:</span>
+                    <span className="font-medium">{paymentCalculation.course_price} {t("sum")}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t("monthly_payment")}:</span>
+                    <span className="font-medium">{paymentCalculation.monthly_installment} {t("sum")}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t("current_payment")} ({paymentCalculation.current_month} {t("months")}):</span>
+                    <span className="font-medium">{paymentCalculation.current_amount} {t("sum")}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex justify-end space-x-4">
+            <Button onClick={() => setPaymentModalVisible(false)}>
+              {t("cancel")}
+            </Button>
+            <Button 
+              type="primary" 
+              onClick={preparePayment}
+              loading={preparingPayment}
+            >
+              {t("proceed_to_payment")}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

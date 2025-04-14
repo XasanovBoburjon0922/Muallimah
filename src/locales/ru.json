@@ -73,5 +73,20 @@
   "continue": "Продолжить",
   "finish_lesson": "Завершить урок",
   "back_to_blogs":"Вернуться к блогам",
-  "no_lessons_available": "Нет доступных уроков"
+  "no_lessons_available": "Нет доступных уроков",
+  "total_installment_months": "Всего месяцев рассрочки",
+  "payment_method": "Способ оплаты",
+  "select_payment_method": "Выберите способ оплаты",
+  "payment_options": "Варианты оплаты",
+  "full_payment": "Полная оплата",
+  "installment_payment": "Оплата в рассрочку",
+  "installment_months": "Месяцы рассрочки",
+  "pay_now_months": "Оплатить сейчас (месяцы)",
+  "payment_summary": "Сводка оплаты",
+  "total_course_price": "Общая стоимость курса",
+  "monthly_payment": "Ежемесячный платеж",
+  "current_payment": "Текущий платеж",
+  "cancel": "Отмена",
+  "proceed_to_payment": "Перейти к оплате",
+  "months": "месяцы"
 }
