@@ -117,10 +117,6 @@ export default function CourseDetails() {
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Payment calculation failed");
-      }
-
       const data = await response.json();
       setPaymentCalculation(data);
     } catch (error) {
@@ -136,17 +132,23 @@ export default function CourseDetails() {
       const userData = JSON.parse(localStorage.getItem("muallimah-user"));
       const token = userData?.access_token;
       
-      const payload = paymentType === "FULL" 
-        ? { 
-            courseID: id, 
-            paymentType
-          }
-        : { 
-            courseID: id, 
-            paymentType, 
-            installmentMonths, 
-            paidMonths
-          };
+      // Prepare the correct payload based on payment type
+      let payload;
+      if (paymentType === "FULL") {
+        payload = {
+          courseID: id,
+          paymentType: "FULL"
+        };
+      } else {
+        payload = {
+          courseID: id,
+          paymentType: "INSTALLMENT",
+          installmentMonths,
+          paidMonths
+        };
+      }
+
+      console.log("Sending payment payload:", payload); // For debugging
 
       const response = await fetch(
         `https://beta.themuallimah.uz/v1/payment/prepare`,
