@@ -7,6 +7,11 @@ const getToken = () => {
   return user ? user.access_token : null;
 };
 
+const getUserId = () => {
+  const user = JSON.parse(localStorage.getItem("muallimah-user"));
+  return user ? user.id : null;
+};
+
 const api = axios.create({
   baseURL: 'https://beta.themuallimah.uz/v1',
 });
@@ -31,7 +36,14 @@ const UserCourses = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.get('/user-course/list')
+    const userId = getUserId();
+    if (!userId) {
+      setError('Foydalanuvchi ma\'lumotlari topilmadi');
+      setLoading(false);
+      return;
+    }
+
+    api.get(`/user-course/list?user_id=${userId}`)
       .then(response => {
         setUserCourses(response.data);
         setLoading(false);
@@ -59,21 +71,31 @@ const UserCourses = () => {
     <div className="pt-4">
       <div className="flex justify-center gap-[6px]">
         <p>Purchased courses are not available,</p>
-        <p className="font-bold text-pink-500">Course purchase</p>
+        <a href='/courses' className="font-bold text-pink-500 cursor-pointer">Course purchase</a>
       </div>
       <div className="mt-4">
         {userCourses.length === 0 ? (
           <p className="text-center">Siz hali hech qanday kurs sotib olmadingiz.</p>
         ) : (
-          userCourses.map(course => (
-            <div
-              key={course.id}
-              className="shadow-md mb-6 p-4 border rounded-lg w-[200px] cursor-pointer"
-              onClick={() => handleCourseClick(course.course_id)}
-            >
-              <h2 className="font-bold text-xl">{course.course_name}</h2>
-            </div>
-          ))
+          <div className="gap-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {userCourses.map(course => (
+              <div
+                key={course.id}
+                className="shadow-md hover:shadow-lg p-4 border rounded-lg transition-shadow cursor-pointer"
+                onClick={() => handleCourseClick(course.course_id)}
+              >
+                <h2 className="mb-2 font-bold text-xl">{course.course_name}</h2>
+                {course.image_url && (
+                  <img 
+                    src={course.image_url} 
+                    alt={course.course_name}
+                    className="mb-2 rounded-md w-full h-40 object-cover"
+                  />
+                )}
+                <p className="text-gray-600">{course.description || 'Tavsif mavjud emas'}</p>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
