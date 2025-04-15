@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import YouTubeStylePlayer from '../../../components/youtubeplayer/youtubeplayer'; // YouTube videolarini ko'rsatish uchun komponent
+import YouTubeStylePlayer from '../../../components/youtubeplayer/youtubeplayer';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const getToken = () => {
     const user = JSON.parse(localStorage.getItem("muallimah-user"));
@@ -30,19 +32,29 @@ const CourseDetails = () => {
     const [lessons, setLessons] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [currentLesson, setCurrentLesson] = useState(0); // Joriy dars indeksi
+    const [currentLesson, setCurrentLesson] = useState(0);
 
     useEffect(() => {
-        api.get(`/user-lessons/list?course_id=${courseId}`)
-            .then(response => {
-                setLessons(response.data);
-                setLoading(false);
-            })
-            .catch(error => {
+        const fetchLessons = async () => {
+            try {
+                const response = await api.get(`/user-lessons/list?course_id=${courseId}`);
+                
+                if (!response.data || response.data.length === 0) {
+                    toast.info("Bu kursda hozircha darslar mavjud emas");
+                    setLessons([]);
+                } else {
+                    setLessons(response.data);
+                }
+            } catch (error) {
                 console.error('Darslarni yuklashda xatolik:', error);
+                toast.error('Darslarni yuklashda xatolik yuz berdi');
                 setError('Darslarni yuklashda xatolik yuz berdi.');
+            } finally {
                 setLoading(false);
-            });
+            }
+        };
+
+        fetchLessons();
     }, [courseId]);
 
     if (loading) {
@@ -53,9 +65,20 @@ const CourseDetails = () => {
         return <div className="mt-4 text-red-500 text-center">{error}</div>;
     }
 
+    if (lessons.length === 0) {
+        return (
+            <div className="p-4 pt-4">
+                <h1 className="mb-6 font-bold text-2xl text-center">Kurs Darslari</h1>
+                <div className="mt-8 text-gray-500 text-center">
+                    Bu kursda hozircha darslar mavjud emas
+                </div>
+            </div>
+        );
+    }
+
     const totalLessons = lessons.length;
-    const progress = ((currentLesson + 1) / totalLessons) * 100; // Progress foizini hisoblash
-    const isLastLesson = currentLesson === totalLessons - 1; // Oxirgi darsni tekshirish
+    const progress = ((currentLesson + 1) / totalLessons) * 100;
+    const isLastLesson = currentLesson === totalLessons - 1;
 
     const handleNextLesson = () => {
         if (currentLesson < totalLessons - 1) {
@@ -76,10 +99,10 @@ const CourseDetails = () => {
                 lesson_id: lessons[currentLesson].id,
                 course_id: courseId,
             });
-            alert('Dars muvaffaqiyatli yakunlandi!');
+            toast.success('Dars muvaffaqiyatli yakunlandi!');
         } catch (error) {
             console.error('Darsni yakunlashda xatolik:', error);
-            alert('Darsni yakunlashda xatolik yuz berdi.');
+            toast.error('Darsni yakunlashda xatolik yuz berdi.');
         }
     };
 
