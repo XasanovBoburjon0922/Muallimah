@@ -94,13 +94,24 @@ export default function CourseDetails() {
     setPaymentModalVisible(true);
     calculatePayment();
   };
-
   const calculatePayment = async () => {
     try {
       setCalculating(true);
       const userData = JSON.parse(localStorage.getItem("muallimah-user"));
       const token = userData?.access_token;
-      
+  
+      // For FULL payment, we don't need to calculate installment months
+      if (paymentType === "FULL") {
+        setPaymentCalculation({
+          course_price: courseDetails.price || 0,
+          monthly_installment: 1,
+          current_month: 1,
+          current_amount: courseDetails.price || 0
+        });
+        return;
+      }
+  
+      // For INSTALLMENT payment, call the API
       const response = await fetch(
         `https://beta.themuallimah.uz/v1/payment/calculate`,
         {
@@ -111,12 +122,16 @@ export default function CourseDetails() {
           },
           body: JSON.stringify({
             course_id: id,
-            installment_month: paymentType === "INSTALLMENT" ? installmentMonths : 0,
-            month: paymentType === "INSTALLMENT" ? paidMonths : 0
+            installment_month: installmentMonths,
+            month: paidMonths
           })
         }
       );
-
+  
+      if (!response.ok) {
+        throw new Error("Payment calculation failed");
+      }
+  
       const data = await response.json();
       setPaymentCalculation(data);
     } catch (error) {
@@ -125,19 +140,21 @@ export default function CourseDetails() {
       setCalculating(false);
     }
   };
-
+  
   const preparePayment = async () => {
     try {
       setPreparingPayment(true);
       const userData = JSON.parse(localStorage.getItem("muallimah-user"));
       const token = userData?.access_token;
-      
+  
       // Prepare the correct payload based on payment type
       let payload;
       if (paymentType === "FULL") {
         payload = {
           courseID: id,
-          paymentType: "FULL"
+          paymentType: "FULL",
+          installmentMonths: 1,
+          paidMonths: 1
         };
       } else {
         payload = {
@@ -147,9 +164,7 @@ export default function CourseDetails() {
           paidMonths
         };
       }
-
-      console.log("Sending payment payload:", payload); // For debugging
-
+  
       const response = await fetch(
         `https://beta.themuallimah.uz/v1/payment/prepare`,
         {
@@ -161,11 +176,11 @@ export default function CourseDetails() {
           body: JSON.stringify(payload)
         }
       );
-
+  
       if (!response.ok) {
         throw new Error("Payment preparation failed");
       }
-
+  
       const data = await response.json();
       if (data.payment_url) {
         window.location.href = data.payment_url;
@@ -248,7 +263,7 @@ export default function CourseDetails() {
                 </div>
               </div>
               <div className="flex flex-wrap justify-center lg:justify-start gap-2 mt-4">
-                <button 
+                <button
                   className="bg-white px-6 py-2 rounded-lg font-medium text-[#0F172A]"
                   onClick={handleBuyClick}
                 >
@@ -336,8 +351,8 @@ export default function CourseDetails() {
         width={600}
       >
         <div className="space-y-6">
-          <Radio.Group 
-            onChange={(e) => setPaymentType(e.target.value)} 
+          <Radio.Group
+            onChange={(e) => setPaymentType(e.target.value)}
             value={paymentType}
             className="w-full"
           >
@@ -412,8 +427,8 @@ export default function CourseDetails() {
             <Button onClick={() => setPaymentModalVisible(false)}>
               {t("cancel")}
             </Button>
-            <Button 
-              type="primary" 
+            <Button
+              type="primary"
               onClick={preparePayment}
               loading={preparingPayment}
             >
